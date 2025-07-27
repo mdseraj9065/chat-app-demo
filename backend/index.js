@@ -21,11 +21,24 @@ app.get("/", (req, res) => {
 });
 
 io.on("connection", (socket) => {
-  console.log("User connected");
-  console.log("Id ", socket.id);
+  console.log("User connected", socket.id);
 
-  socket.emit("welcome", `Welcome to the server`);
+  // socket.emit("welcome", `Welcome to the server`);
   socket.broadcast.emit("welcome", `${socket.id} joined the server`);
+
+  socket.on("message", ({message, room}) => {
+    console.log(`message = ${message}, room = ${room}`);
+    socket.to(room).emit("recieved-message", message);
+  })
+
+  socket.on("join-room", (room) => {
+    socket.join(room);
+    console.log(`User joined room ${room}`)
+  })
+
+  socket.on("disconnect", () => {
+    console.log("user disconnected", socket.id);
+  })
 });
 
 server.listen(1234, () => {
